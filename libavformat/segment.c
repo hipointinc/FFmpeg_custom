@@ -27,6 +27,7 @@
 #include "config_components.h"
 
 #include <time.h>
+#include <sys/time.h>
 
 #include "avformat.h"
 #include "internal.h"
@@ -205,6 +206,24 @@ static int set_segment_filename(AVFormatContext *s)
             av_log(oc, AV_LOG_ERROR, "Could not get segment filename with strftime\n");
             return AVERROR(EINVAL);
         }
+
+		/***************************************************
+		* Patch By SRC Coders on 14-May-2025 18:27 PM PKT
+		********************* Start ************************
+		***************************************************/
+
+		struct timeval tv;
+		gettimeofday(&tv, NULL);
+		long micro_seconds = tv.tv_usec;
+		char str_micro_seconds[10];
+		sprintf(str_micro_seconds, ".%ld", micro_seconds);
+		strcat(buf, str_micro_seconds);
+
+		/***************************************************
+		* Patch By SRC Coders on 14-May-2025 18:27 PM PKT
+		********************* End **************************
+		***************************************************/
+
     } else if (av_get_frame_filename(buf, sizeof(buf),
                                      s->url, seg->segment_idx) < 0) {
         av_log(oc, AV_LOG_ERROR, "Invalid segment filename template '%s'\n", s->url);
