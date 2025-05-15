@@ -208,19 +208,37 @@ static int set_segment_filename(AVFormatContext *s)
         }
 
 		/***************************************************
-		* Patch By SRC Coders on 14-May-2025 18:27 PM PKT
+		* Patch By SRC Coders on 15-May-2025 19:55 PM PKT
 		********************* Start ************************
 		***************************************************/
+
+		char fileExtension[20];
+		for (int i=0 ; i < 20; i++){
+			fileExtension[i] = 0;
+		}
+
+		int length = strlen(buf);
+		int index_dot = length;
+		for (int i=0 ; i < length; i++){
+		  if (buf[i] == '.') {
+			index_dot = i;
+		  }
+		}
+
+		for (int i=0; i < length-index_dot; i++){
+			fileExtension[i] = buf[index_dot+i];
+		}
+		buf[index_dot] = 0;
 
 		struct timeval tv;
 		gettimeofday(&tv, NULL);
 		long micro_seconds = tv.tv_usec;
 		char str_micro_seconds[10];
-		sprintf(str_micro_seconds, ".%ld", micro_seconds);
+		sprintf(str_micro_seconds, ".%ld%s", micro_seconds, fileExtension);
 		strcat(buf, str_micro_seconds);
 
 		/***************************************************
-		* Patch By SRC Coders on 14-May-2025 18:27 PM PKT
+		* Patch By SRC Coders on 15-May-2025 19:55 PM PKT
 		********************* End **************************
 		***************************************************/
 
