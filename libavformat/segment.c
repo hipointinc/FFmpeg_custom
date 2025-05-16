@@ -207,54 +207,40 @@ static int set_segment_filename(AVFormatContext *s)
             return AVERROR(EINVAL);
         }
 
-        /***************************************************
-* Patch By SRC Coders on 15-May-2025 19:55 PM PKT
-***************** Millisecond Version *************
-***************************************************/
+		/***************************************************
+		* Patch By SRC Coders on 15-May-2025 19:55 PM PKT
+		********************* Start ************************
+		***************************************************/
 
-        char fileExtension[20] = {0};               // Safely zero init
-        size_t buf_len = strlen(buf);
+		char fileExtension[20];
+		for (int i=0 ; i < 20; i++){
+			fileExtension[i] = 0;
+		}
 
-        // Safely find last dot in buf to isolate extension
-        int index_dot = -1;
-        for (int i = (int)buf_len - 1; i >= 0; i--) {
-            if (buf[i] == '.') {
-                index_dot = i;
-                break;
-            }
-        }
+		int length = strlen(buf);
+		int index_dot = length;
+		for (int i=0 ; i < length; i++){
+		  if (buf[i] == '.') {
+			index_dot = i;
+		  }
+		}
 
-        if (index_dot == -1 || index_dot >= (int)buf_len - 1 || (buf_len - index_dot) >= sizeof(fileExtension)) {
-            av_log(oc, AV_LOG_ERROR, "Failed to extract file extension from: %s\n", buf);
-            return AVERROR(EINVAL);
-        }
+		for (int i=0; i < length-index_dot; i++){
+			fileExtension[i] = buf[index_dot+i];
+		}
+		buf[index_dot] = 0;
 
-        // Copy extension including the dot (e.g., ".ts")
-        snprintf(fileExtension, sizeof(fileExtension), "%s", buf + index_dot);
+		struct timeval tv;
+		gettimeofday(&tv, NULL);
+		long micro_seconds = tv.tv_usec;
+		char str_micro_seconds[50];
+		sprintf(str_micro_seconds, ".%ld%s", micro_seconds, fileExtension);
+		strcat(buf, str_micro_seconds);
 
-        // Truncate buf at the extension
-        buf[index_dot] = '\0';
-
-        // Get current time (seconds + microseconds)
-        struct timeval tv;
-        gettimeofday(&tv, NULL);
-
-        // Convert microseconds to milliseconds (rounded)
-        long milliseconds = (tv.tv_usec + 500) / 1000;  // add 500 for rounding
-
-        // Append .<milliseconds><extension> safely
-        size_t remaining = sizeof(buf) - strlen(buf) - 1;
-        int ret2 = snprintf(buf + strlen(buf), remaining, ".%03ld%s", milliseconds, fileExtension);
-
-        if (ret2 < 0 || (size_t)ret2 >= remaining) {
-            av_log(oc, AV_LOG_ERROR, "Filename buffer too small when appending milliseconds\n");
-            return AVERROR(ENAMETOOLONG);
-        }
-
-        /***************************************************
-        * Patch By SRC Coders on 15-May-2025 19:55 PM PKT
-        ********************* End **************************
-        ***************************************************/
+		/***************************************************
+		* Patch By SRC Coders on 15-May-2025 19:55 PM PKT
+		********************* End **************************
+		***************************************************/
 
     } else if (av_get_frame_filename(buf, sizeof(buf),
                                      s->url, seg->segment_idx) < 0) {
